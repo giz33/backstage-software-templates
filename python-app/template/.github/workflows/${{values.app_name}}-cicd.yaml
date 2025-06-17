@@ -60,6 +60,12 @@ jobs:
       - name: Ensure ArgoCD repo and app
         shell: bash
         run: |
+          #Connects to ArgoCD
+          argocd login argocd-server.argocd \
+            --insecure \
+            --grpc-web \
+            --username admin \
+            --password ${{ '${{ secrets.ARGOCD_PASSWORD }}' }}
           #Connects the ArgoCD repo
           repo="https://github.com/giz-33/${{values.app_name}}.git"
           argocd repo list | grep -q $repo || argocd repo add $repo
@@ -79,9 +85,5 @@ jobs:
       - name: ArgocdSync
         shell: bash
         run: |
-          argocd login argocd-server.argocd \
-            --insecure \
-            --grpc-web \
-            --username admin \
-            --password ${{ '${{ secrets.ARGOCD_PASSWORD }}' }}
           argocd app sync ${{values.app_name}}
+          argocd app wait ${{values.app_name}} --timeout 180
